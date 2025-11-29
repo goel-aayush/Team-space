@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { gql } from "@apollo/client";
 import { useLazyQuery } from "@apollo/client/react";
+import { Eye, EyeOff } from "lucide-react";
 
 const LOGIN_QUERY = gql`
   query Login($name: String!, $password: String!) {
@@ -18,8 +19,8 @@ const LOGIN_QUERY = gql`
 export default function Login({ onLoginSuccess }) {
   const [formData, setFormData] = useState({ name: "", password: "" });
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // 1. Remove 'onCompleted' from here
   const [login, { loading }] = useLazyQuery(LOGIN_QUERY, {
     fetchPolicy: "network-only",
   });
@@ -29,22 +30,19 @@ export default function Login({ onLoginSuccess }) {
     setErrorMsg("");
 
     try {
-      // 2. Wait for the result directly here
+      console.log("Attempting login...");
       const result = await login({
         variables: { name: formData.name, password: formData.password },
       });
 
-      // 3. Manually check for data
       if (result.error) {
         throw new Error(result.error.message);
       }
 
       if (result.data && result.data.login) {
-        // 4. Save to LocalStorage
+        console.log("Login Successful!");
         localStorage.setItem("token", result.data.login.token);
         localStorage.setItem("user", JSON.stringify(result.data.login.user));
-
-        // 5. Trigger the parent update
         onLoginSuccess(result.data.login.user);
       } else {
         setErrorMsg("Invalid credentials or server error");
@@ -86,20 +84,35 @@ export default function Login({ onLoginSuccess }) {
               }
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full p-3 pr-10 border border-gray-300 rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-600 transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
+
           <button
             type="submit"
             disabled={loading}
