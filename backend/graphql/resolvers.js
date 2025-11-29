@@ -23,26 +23,24 @@ const resolvers = {
       { page = 1, limit = 10, sortBy = "name", sortOrder = "asc", filterName },
       context
     ) => {
-      // 1. Auth Check: Ensure user is logged in
+      // Auth Check: Ensure user is logged in
       if (!context.user)
         throw new GraphQLError("You must be logged in", {
           extensions: { code: "UNAUTHENTICATED" },
         });
 
-      // 2. Build Filter Object [cite: 25]
       const query = {};
 
       if (context.user.role === "EMPLOYEE") {
-        // SECURITY: Force the search to ONLY match their own ID
         query._id = context.user.id;
       } else {
-        // ADMIN Logic: Can see everyone & search by name
+        // admin logic
         if (filterName) {
           query.name = { $regex: filterName, $options: "i" };
         }
       }
 
-      // 3. Performance: Pagination & Sorting [cite: 31, 34]
+      // Pagination & Sorting
       const skip = (page - 1) * limit;
       const sortOptions = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
@@ -72,7 +70,7 @@ const resolvers = {
 
   Mutation: {
     addEmployee: async (_, args, context) => {
-      // 1. Authorization: Only ADMIN can add employees [cite: 33]
+      // Authorization: Only ADMIN can add employees
       if (!context.user || context.user.role !== "ADMIN") {
         throw new GraphQLError("Access Denied: Admins only", {
           extensions: { code: "FORBIDDEN" },
@@ -82,7 +80,7 @@ const resolvers = {
       // UPDATE: Apply defaults for new fields if not provided
       const newEmployee = new Employee({
         ...args,
-        department: args.department || args.class, // Default department to class if missing
+        department: args.department || args.class,
         status: args.status || "Present",
         location: args.location || "New York, USA",
         email: args.email || "",
@@ -93,13 +91,13 @@ const resolvers = {
     },
 
     updateEmployee: async (_, { id, ...updates }, context) => {
-      // Authorization: Admin Only [cite: 33]
+      // Authorization: Admin Only
       if (!context.user || context.user.role !== "ADMIN") {
         throw new GraphQLError("Access Denied", {
           extensions: { code: "FORBIDDEN" },
         });
       }
-      // "updates" contains all the new fields (department, status, etc.) automatically
+
       return await Employee.findByIdAndUpdate(id, updates, { new: true });
     },
 

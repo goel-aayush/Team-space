@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { GraphQLError } = require("graphql");
+require("dotenv").config();
 
-const SECRET_KEY = "super_secret_key_change_this";
+const SECRET_KEY = process.env.JWT_SECRET;
 
 const getUser = (token) => {
   if (token) {
