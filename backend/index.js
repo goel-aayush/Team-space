@@ -4,10 +4,10 @@ const mongoose = require("mongoose");
 const typeDefs = require("./graphql/typeDefs");
 const resolvers = require("./graphql/resolvers");
 const { getUser } = require("./utils/auth");
+require("dotenv").config();
 
 // MongoDB Connection String
-const MONGODB_URI =
-  "mongodb+srv://mgoel1296_db_user:K5Hx02tz3dkGYB0S@cluster0.vmdqym1.mongodb.net/?appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose
   .connect(MONGODB_URI)
