@@ -8,6 +8,7 @@ require("dotenv").config();
 
 // MongoDB Connection String
 const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 4000;
 
 mongoose
   .connect(MONGODB_URI)
@@ -28,7 +29,7 @@ const startServer = async () => {
       const user = getUser(token.replace("Bearer ", ""));
       return { user };
     },
-    listen: { port: 4000 },
+    listen: { port: PORT },
   });
 
   console.log(` Server ready at: ${url}`);
